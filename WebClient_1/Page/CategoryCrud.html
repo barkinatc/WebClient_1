@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <link href="../Content/bootstrap.css" rel="stylesheet" />
+
+    <script src="../Scripts/jquery-3.6.4.js"></script>
+
+    <script src="../Scripts/bootstrap.js"></script>
+
+    <style>
+        .genislik{
+            width:300px;
+        }
+    </style>
+
+
+</head>
+<body>
+
+    <div class=" container">
+
+        <div class=" row">
+            <div class=" col-6">
+
+                ID  <input type="text" class=" form-control genislik" id="txtID" placeholder="ID giriniz." />
+                Name  <input type="text" class=" form-control genislik" id="txtName" placeholder="Kategori Ismi" />
+                Description  <input type="text" class=" form-control genislik" id="txtDesc" placeholder="Aciklama" />
+
+                <hr />
+
+                <input type="button" id="btnAll" class=" btn btn-outline-success" value=" Kategorileri Getir" />
+                <input type="button" id="btnID" class=" btn btn-outline-success" value=" Kategori Getir" />
+
+                <hr />
+
+                <input type="button" id="btnAdd" class=" btn btn-outline-success" value="Kategori Ekle" />
+                <input type="button" id="btnDelete" class=" btn btn-outline-danger" value="Kategori Sil" />
+                <input type="button" id="btnUpdate" class=" btn btn-outline-warning" value="Kategori Güncelle" />
+
+                <hr />
+
+                <input type="text" id="txtSearch" class=" form-control genislik" placeholder="AramaYapınız" />
+
+
+            </div>
+
+            <div class="col-6">
+                <table id="tab1" class=" table table-hover">
+                    <tr>
+                        <th>Kategori ID</th>
+                        <th>Kategori Ismi</th>
+                        <th>Kategori Aciklaması</th>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!--   https://localhost:44362/     host url! --> 
+
+    <script>
+
+        // ilk tr dışında trleri temizler
+
+        function ControlHeader() {
+            $("#tab1").find("tr:gt(0)").remove(); // Table row must be greater than zero.
+        }
+
+        //API'ya gittigimiz ve List şeklinde veri aldıgımız zaman o verileri tablomuzun içerisine entegre eder.
+
+        function BringDataList(dataList) {
+            ControlHeader();
+
+            $.each(dataList, function (key, data) {
+
+                $("#tab1").append("<tr>  <td>  " + data.ID + "    </td> <td> " + data.CategoryName + " </td>     <td>" + data.Description + "</td>  <td> <button data-id='" + data.ID + "' value='update' id='btnUpdate" + data.ID + " ' class='btn btn-warning'>Guncelle</button> </td> <td><button class='btn btn-danger' data-id='" + data.ID + "' value='delete'>Sil</button></td> <td><button class ='btn btn-dark' data-id='" + data.ID + "' value='select'>Sec</button></td>   </tr>");
+
+            })
+        }
+
+        //API'ya gittigimiz ve Tekil şekilde gelen veriyi tablomuza entegre etmemizin için yazdıgımız function.
+
+        function BringData(data) {
+            ControlHeader();
+
+            $("#tab1").append("<tr>  <td>  " + data.ID + "    </td> <td> " + data.CategoryName + " </td>     <td>" + data.Description + "</td>  <td> <button data-id='" + data.ID + "' value='update' id='btnUpdate" + data.ID + " ' class='btn btn-warning'>Guncelle</button> </td> <td><button class='btn btn-danger' data-id='" + data.ID + "' value='delete'>Sil</button></td> <td><button class ='btn btn-dark' data-id='" + data.ID + "' value='select'>Sec</button></td>   </tr>");
+
+        }
+
+        //API 'ya ulaşım kodlarını yazmadan önce sayfanın render edilme olayınından emin olmamız gerekiyor.
+
+        $(function () {
+            // Kategorileri listelemek
+
+            $("#btnAll").click(function () {
+
+                $.ajax({
+
+                    url: "https://localhost:44362/api/Category/BringCategories",
+                    type: "Get",
+                    success: function (dataList) {
+
+                        BringDataList(dataList);
+                    }
+
+
+                })
+
+
+            })
+
+            //KAtegori getir
+
+            $("#btnID").click(function () {
+
+
+                $.ajax({
+
+                    url: "https://localhost:44362/api/Category/GetCategory",
+                    data: {id : $("#txtSearch").val() },
+                    type: "Get",
+
+                    success: function (data) {
+                        BringData(data);
+                    }
+
+
+                })
+
+
+            })
+
+            //Kategori Ekle
+
+
+            $("#btnAdd").click(function () {
+                $.ajax({
+
+                    url: "https://localhost:44362/api/Category/AddCategory",
+                    type: "Post",
+                    data: { CategoryName: $("#txtName").val(), Description: $("#txtDesc").val() },
+                    success: function (dataList) {
+                        BringDataList(dataList);
+                    }
+
+
+                })
+
+
+            })
+
+            // KAtegori sil
+
+
+            $("#btnDelete").click(function () {
+                $.ajax({
+                    url: "https://localhost:44362/api/Category/DeleteCategory/" + $("#txtSearch").val(),
+                    type: "Delete",
+                    
+                    success: function (dataList) {
+                        BringDataList(dataList);
+                    }
+
+                })
+            })
+
+            //Kategori Güncelle
+
+            $("#btnUpdate").click(function () {
+                $.ajax({
+                    url: "https://localhost:44362/api/Category/UpdateCategory",
+                    type: "Put",
+                    data: { ID: $("#txtID").val(), CategoryName: $("#txtName").val(), Description: $("#txtDesc").val() },
+                    success: function (dataList) {
+                        BringDataList(dataList);
+                    }
+
+                })
+            })
+
+            //Kategori Ara
+
+            $("#txtSearch").keyup(function () {
+
+                $.ajax({
+                    url: "https://localhost:44362/api/Category/SearchCategory",
+                    type: "Get",
+                    data: { item: $(this).val() },
+                    success: function (dataList) {
+                        BringDataList(dataList);
+                    }
+                })
+            })
+            
+            //Js EventHandling
+
+            //Güncelle
+
+
+            $("#tab1").on("click", "[value=update]", function () {
+
+                
+                    $.ajax({
+                        url: "https://localhost:44362/api/Category/UpdateCategory",
+                        type: "Put",
+                        data: { ID: $(this).attr("data-id"), CategoryName: $("#txtName").val(), Description: $("#txtDesc").val() },
+                        success: function (dataList) {
+                            BringDataList(dataList);
+                        }
+
+                    })
+               
+
+
+
+            })
+
+            //Silme
+
+            $("#tab1").on("click", "[value=delete]", function () {
+
+                $.ajax({
+                    url: "https://localhost:44362/api/Category/DeleteCategory/" + $(this).attr("data-id"),
+                    type: "Delete",
+
+                    success: function (dataList) {
+                        BringDataList(dataList);
+                    }
+
+                })
+
+            })
+
+            //Seç
+
+            $("#tab1").on("click", "[value=select]", function () {
+
+                $.ajax({
+
+                    url: "https://localhost:44362/api/Category/GetCategory",
+                    data: { id: $(this).attr("data-id") },
+                    type: "Get",
+
+                    success: function (data) {
+                        $("#txtID").val(data.ID);
+                        $("#txtName").val(data.CategoryName);
+                        $("#txtDesc").val(data.Description);
+                    }
+
+
+                })
+
+            })
+
+        })
+
+
+    </script>
+
+
+
+
+</body>
+</html>
